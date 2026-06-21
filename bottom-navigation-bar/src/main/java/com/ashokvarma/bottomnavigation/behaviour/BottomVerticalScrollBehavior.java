@@ -6,6 +6,7 @@ import android.view.animation.Interpolator;
 
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.view.ViewCompat;
+import androidx.core.view.ViewPropertyAnimatorCompat;
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator;
 
 import com.ashokvarma.bottomnavigation.BottomNavigationBar;
@@ -26,6 +27,7 @@ public class BottomVerticalScrollBehavior<V extends View> extends VerticalScroll
     private static final Interpolator INTERPOLATOR = new FastOutSlowInInterpolator();
     private int mBottomNavHeight;
     private WeakReference<BottomNavigationBar> mViewRef;
+    private ViewPropertyAnimatorCompat mSnackBarAnimator;
 
     ///////////////////////////////////////////////////////////////////////////
     // onBottomBar changes
@@ -77,7 +79,15 @@ public class BottomVerticalScrollBehavior<V extends View> extends VerticalScroll
 
     private void updateSnackBarPosition(CoordinatorLayout parent, V child, View dependency, float translationY) {
         if (dependency != null && dependency instanceof Snackbar.SnackbarLayout) {
-            ViewCompat.animate(dependency).setInterpolator(INTERPOLATOR).setDuration(80).setStartDelay(0).translationY(translationY).start();
+            if (mSnackBarAnimator != null) {
+                mSnackBarAnimator.cancel();
+            }
+            mSnackBarAnimator = ViewCompat.animate(dependency)
+                    .setInterpolator(INTERPOLATOR)
+                    .setDuration(80)
+                    .setStartDelay(0)
+                    .translationY(translationY);
+            mSnackBarAnimator.start();
         }
     }
 

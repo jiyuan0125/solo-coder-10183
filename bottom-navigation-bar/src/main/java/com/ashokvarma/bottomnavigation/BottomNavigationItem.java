@@ -232,6 +232,20 @@ public class BottomNavigationItem {
     }
 
     /**
+     * @return if active color is set via any source (resource, code, or int)
+     */
+    boolean isActiveColorSet() {
+        return mActiveColorResource != 0 || !TextUtils.isEmpty(mActiveColorCode) || mIsActiveColorSet;
+    }
+
+    /**
+     * @return if in-active color is set via any source (resource, code, or int)
+     */
+    boolean isInActiveColorSet() {
+        return mInActiveColorResource != 0 || !TextUtils.isEmpty(mInActiveColorCode) || mIsInActiveColorSet;
+    }
+
+    /**
      * @param context to fetch color
      * @return active color (or) -1 if no color is specified
      */

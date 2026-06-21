@@ -10,8 +10,6 @@ import android.view.View;
 import android.view.ViewAnimationUtils;
 import android.widget.FrameLayout;
 
-import com.ashokvarma.bottomnavigation.utils.Utils;
-
 /**
  * Class description : This is utils class specific for this library, most the common code goes here.
  *
@@ -120,17 +118,14 @@ class BottomNavigationHelper {
         bottomNavigationTab.setLabel(bottomNavigationItem.getTitle(context));
         bottomNavigationTab.setIcon(bottomNavigationItem.getIcon(context));
 
-        int activeColor = bottomNavigationItem.getActiveColor(context);
-        int inActiveColor = bottomNavigationItem.getInActiveColor(context);
-
-        if (activeColor != Utils.NO_COLOR) {
-            bottomNavigationTab.setActiveColor(activeColor);
+        if (bottomNavigationItem.isActiveColorSet()) {
+            bottomNavigationTab.setActiveColor(bottomNavigationItem.getActiveColor(context));
         } else {
             bottomNavigationTab.setActiveColor(bottomNavigationBar.getActiveColor());
         }
 
-        if (inActiveColor != Utils.NO_COLOR) {
-            bottomNavigationTab.setInactiveColor(inActiveColor);
+        if (bottomNavigationItem.isInActiveColorSet()) {
+            bottomNavigationTab.setInactiveColor(bottomNavigationItem.getInActiveColor(context));
         } else {
             bottomNavigationTab.setInactiveColor(bottomNavigationBar.getInActiveColor());
         }

@@ -15,6 +15,7 @@ import android.view.animation.Interpolator;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
+import androidx.annotation.ColorInt;
 import androidx.annotation.ColorRes;
 import androidx.annotation.IntDef;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
@@ -350,6 +351,16 @@ public class BottomNavigationBar extends FrameLayout {
     }
 
     /**
+     * @param backgroundColor raw int color value for the default background color
+     * @return this, to allow builder pattern
+     */
+    public BottomNavigationBar setBarBackgroundColorInt(@ColorInt int backgroundColor) {
+        this.mBackgroundColor = backgroundColor;
+        applyBackgroundColor();
+        return this;
+    }
+
+    /**
      * @param firstSelectedPosition position of tab that needs to be selected by default
      * @return this, to allow builder pattern
      */
@@ -466,7 +477,11 @@ public class BottomNavigationBar extends FrameLayout {
         mBottomNavigationTabs.clear();
         mBottomNavigationItems.clear();
         mBackgroundOverlay.setVisibility(View.GONE);
-        mContainer.setBackgroundColor(Color.TRANSPARENT);
+        if (mBackgroundStyle == BACKGROUND_STYLE_STATIC) {
+            mContainer.setBackgroundColor(mBackgroundColor);
+        } else {
+            mContainer.setBackgroundColor(Color.TRANSPARENT);
+        }
         mSelectedPosition = DEFAULT_SELECTED_POSITION;
         mIsHidden = false;
         if (mTranslationAnimator != null) {
