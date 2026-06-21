@@ -36,10 +36,12 @@ public class BottomNavigationItem {
     private int mActiveColorResource;
     private String mActiveColorCode;
     private int mActiveColor;
+    private boolean mIsActiveColorSet;
 
     private int mInActiveColorResource;
     private String mInActiveColorCode;
     private int mInActiveColor;
+    private boolean mIsInActiveColorSet;
 
     private BadgeItem mBadgeItem;
 
@@ -132,6 +134,7 @@ public class BottomNavigationItem {
      */
     public BottomNavigationItem setActiveColor(int color) {
         this.mActiveColor = color;
+        this.mIsActiveColorSet = true;
         return this;
     }
 
@@ -159,6 +162,7 @@ public class BottomNavigationItem {
      */
     public BottomNavigationItem setInActiveColor(int color) {
         this.mInActiveColor = color;
+        this.mIsInActiveColorSet = true;
         return this;
     }
 
@@ -236,7 +240,7 @@ public class BottomNavigationItem {
             return ContextCompat.getColor(context, mActiveColorResource);
         } else if (!TextUtils.isEmpty(mActiveColorCode)) {
             return Color.parseColor(mActiveColorCode);
-        } else if (this.mActiveColor != 0) {
+        } else if (mIsActiveColorSet) {
             return mActiveColor;
         } else {
             return Utils.NO_COLOR;
@@ -252,7 +256,7 @@ public class BottomNavigationItem {
             return ContextCompat.getColor(context, mInActiveColorResource);
         } else if (!TextUtils.isEmpty(mInActiveColorCode)) {
             return Color.parseColor(mInActiveColorCode);
-        } else if (this.mInActiveColor != 0) {
+        } else if (mIsInActiveColorSet) {
             return mInActiveColor;
         } else {
             return Utils.NO_COLOR;

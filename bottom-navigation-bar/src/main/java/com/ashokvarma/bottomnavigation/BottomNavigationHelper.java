@@ -8,6 +8,7 @@ import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.view.View;
 import android.view.ViewAnimationUtils;
+import android.widget.FrameLayout;
 
 import com.ashokvarma.bottomnavigation.utils.Utils;
 
@@ -158,10 +159,10 @@ class BottomNavigationHelper {
      * @param newColor          the new color i.e ripple color
      * @param animationDuration duration for which animation runs
      */
-    static void setBackgroundWithRipple(View clickedView, final View backgroundView,
-                                        final View bgOverlay, final int newColor, int animationDuration) {
+    static Animator setBackgroundWithRipple(View clickedView, final View backgroundView,
+                                        final FrameLayout bgOverlay, final int newColor, int animationDuration) {
         int centerX = (int) (clickedView.getX() + (clickedView.getMeasuredWidth() / 2));
-        int centerY = clickedView.getMeasuredHeight() / 2;
+        int centerY = (int) (clickedView.getY() + (clickedView.getMeasuredHeight() / 2));
         int finalRadius = backgroundView.getWidth();
 
         backgroundView.clearAnimation();
@@ -198,5 +199,6 @@ class BottomNavigationHelper {
         bgOverlay.setBackgroundColor(newColor);
         bgOverlay.setVisibility(View.VISIBLE);
         circularReveal.start();
+        return circularReveal;
     }
 }

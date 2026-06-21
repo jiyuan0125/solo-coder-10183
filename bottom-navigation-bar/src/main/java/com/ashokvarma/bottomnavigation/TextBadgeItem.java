@@ -23,16 +23,19 @@ public class TextBadgeItem extends BadgeItem<TextBadgeItem> {
     private int mBackgroundColorResource;
     private String mBackgroundColorCode;
     private int mBackgroundColor = Color.RED;
+    private boolean mBackgroundColorSet;
 
     private int mTextColorResource;
     private String mTextColorCode;
     private int mTextColor = Color.WHITE;
+    private boolean mTextColorSet;
 
     private CharSequence mText;
 
     private int mBorderColorResource;
     private String mBorderColorCode;
     private int mBorderColor = Color.WHITE;
+    private boolean mBorderColorSet;
 
     private int mBorderWidthInPixels = 0;
 
@@ -68,6 +71,7 @@ public class TextBadgeItem extends BadgeItem<TextBadgeItem> {
      */
     public TextBadgeItem setBackgroundColor(int color) {
         this.mBackgroundColor = color;
+        this.mBackgroundColorSet = true;
         refreshDrawable();
         return this;
     }
@@ -98,6 +102,7 @@ public class TextBadgeItem extends BadgeItem<TextBadgeItem> {
      */
     public TextBadgeItem setTextColor(int color) {
         this.mTextColor = color;
+        this.mTextColorSet = true;
         setTextColor();
         return this;
     }
@@ -153,6 +158,7 @@ public class TextBadgeItem extends BadgeItem<TextBadgeItem> {
      */
     public TextBadgeItem setBorderColor(int color) {
         this.mBorderColor = color;
+        this.mBorderColorSet = true;
         refreshDrawable();
         return this;
     }
@@ -206,8 +212,10 @@ public class TextBadgeItem extends BadgeItem<TextBadgeItem> {
             return ContextCompat.getColor(context, mBackgroundColorResource);
         } else if (!TextUtils.isEmpty(mBackgroundColorCode)) {
             return Color.parseColor(mBackgroundColorCode);
-        } else {
+        } else if (mBackgroundColorSet) {
             return mBackgroundColor;
+        } else {
+            return Color.RED;
         }
     }
 
@@ -220,8 +228,10 @@ public class TextBadgeItem extends BadgeItem<TextBadgeItem> {
             return ContextCompat.getColor(context, mTextColorResource);
         } else if (!TextUtils.isEmpty(mTextColorCode)) {
             return Color.parseColor(mTextColorCode);
-        } else {
+        } else if (mTextColorSet) {
             return mTextColor;
+        } else {
+            return Color.WHITE;
         }
     }
 
@@ -241,8 +251,10 @@ public class TextBadgeItem extends BadgeItem<TextBadgeItem> {
             return ContextCompat.getColor(context, mBorderColorResource);
         } else if (!TextUtils.isEmpty(mBorderColorCode)) {
             return Color.parseColor(mBorderColorCode);
-        } else {
+        } else if (mBorderColorSet) {
             return mBorderColor;
+        } else {
+            return Color.WHITE;
         }
     }
 

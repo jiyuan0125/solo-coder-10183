@@ -103,14 +103,14 @@ public class BottomVerticalScrollBehavior<V extends View> extends VerticalScroll
 
     @Override
     public void onNestedVerticalPreScroll(CoordinatorLayout coordinatorLayout, V child, View target, int dx, int dy, int[] consumed, @ScrollDirection int scrollDirection) {
-//        handleDirection(child, scrollDirection);
+        handleDirection(coordinatorLayout, child, scrollDirection);
     }
 
     @Override
     protected boolean onNestedDirectionFling(CoordinatorLayout coordinatorLayout, V child, View target, float velocityX, float velocityY, boolean consumed, @ScrollDirection int scrollDirection) {
-//        if (consumed) {
-//            handleDirection(child, scrollDirection);
-//        }
+        if (consumed) {
+            handleDirection(coordinatorLayout, child, scrollDirection);
+        }
         return consumed;
     }
 

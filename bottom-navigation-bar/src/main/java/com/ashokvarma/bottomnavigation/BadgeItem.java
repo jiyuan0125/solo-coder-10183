@@ -27,6 +27,7 @@ abstract class BadgeItem<T extends BadgeItem<T>> {
     private WeakReference<BadgeTextView> mTextViewRef;
 
     private boolean mIsHidden = false;
+    private boolean mIsHiddenAuto = false;
 
     private int mAnimationDuration = 200;
 
@@ -161,6 +162,65 @@ abstract class BadgeItem<T extends BadgeItem<T>> {
         return mTextViewRef != null && mTextViewRef.get() != null;
     }
 
+    private void updateViewVisibility(boolean animate) {
+        if (isHidden()) {
+            hideInternal(animate);
+        } else {
+            showInternal(animate);
+        }
+    }
+
+    private void showInternal(boolean animate) {
+        if (isWeakReferenceValid()) {
+            TextView textView = mTextViewRef.get();
+            if (animate) {
+                textView.setScaleX(0);
+                textView.setScaleY(0);
+                textView.setVisibility(View.VISIBLE);
+                ViewPropertyAnimatorCompat animatorCompat = ViewCompat.animate(textView);
+                animatorCompat.cancel();
+                animatorCompat.setDuration(mAnimationDuration);
+                animatorCompat.scaleX(1).scaleY(1);
+                animatorCompat.setListener(null);
+                animatorCompat.start();
+            } else {
+                textView.setScaleX(1);
+                textView.setScaleY(1);
+                textView.setVisibility(View.VISIBLE);
+            }
+        }
+    }
+
+    private void hideInternal(boolean animate) {
+        if (isWeakReferenceValid()) {
+            TextView textView = mTextViewRef.get();
+            if (animate) {
+                ViewPropertyAnimatorCompat animatorCompat = ViewCompat.animate(textView);
+                animatorCompat.cancel();
+                animatorCompat.setDuration(mAnimationDuration);
+                animatorCompat.scaleX(0).scaleY(0);
+                animatorCompat.setListener(new ViewPropertyAnimatorListener() {
+                    @Override
+                    public void onAnimationStart(View view) {
+                    }
+
+                    @Override
+                    public void onAnimationEnd(View view) {
+                        view.setVisibility(View.GONE);
+                    }
+
+                    @Override
+                    public void onAnimationCancel(View view) {
+                        view.setVisibility(View.GONE);
+                    }
+                });
+                animatorCompat.start();
+            } else {
+                textView.setVisibility(View.GONE);
+            }
+        }
+    }
+
     ///////////////////////////////////////////////////////////////////////////
     // Internal call back methods
     ///////////////////////////////////////////////////////////////////////////
@@ -170,7 +230,8 @@ abstract class BadgeItem<T extends BadgeItem<T>> {
      */
     void select() {
         if (mHideOnSelect) {
-            hide(true);
+            mIsHiddenAuto = true;
+            updateViewVisibility(true);
         }
     }
 
@@ -179,7 +240,8 @@ abstract class BadgeItem<T extends BadgeItem<T>> {
      */
     void unSelect() {
         if (mHideOnSelect) {
-            show(true);
+            mIsHiddenAuto = false;
+            updateViewVisibility(true);
         }
     }
 
@@ -199,7 +261,7 @@ abstract class BadgeItem<T extends BadgeItem<T>> {
      * @return this, to allow builder pattern
      */
     public T toggle(boolean animate) {
-        if (mIsHidden) {
+        if (isHidden()) {
             return show(animate);
         } else {
             return hide(animate);
@@ -219,24 +281,8 @@ abstract class BadgeItem<T extends BadgeItem<T>> {
      */
     public T show(boolean animate) {
         mIsHidden = false;
-        if (isWeakReferenceValid()) {
-            TextView textView = mTextViewRef.get();
-            if (animate) {
-                textView.setScaleX(0);
-                textView.setScaleY(0);
-                textView.setVisibility(View.VISIBLE);
-                ViewPropertyAnimatorCompat animatorCompat = ViewCompat.animate(textView);
-                animatorCompat.cancel();
-                animatorCompat.setDuration(mAnimationDuration);
-                animatorCompat.scaleX(1).scaleY(1);
-                animatorCompat.setListener(null);
-                animatorCompat.start();
-            } else {
-                textView.setScaleX(1);
-                textView.setScaleY(1);
-                textView.setVisibility(View.VISIBLE);
-            }
-        }
+        mIsHiddenAuto = false;
+        showInternal(animate);
         return getSubInstance();
     }
 
@@ -253,34 +299,7 @@ abstract class BadgeItem<T extends BadgeItem<T>> {
      */
     public T hide(boolean animate) {
         mIsHidden = true;
-        if (isWeakReferenceValid()) {
-            TextView textView = mTextViewRef.get();
-            if (animate) {
-                ViewPropertyAnimatorCompat animatorCompat = ViewCompat.animate(textView);
-                animatorCompat.cancel();
-                animatorCompat.setDuration(mAnimationDuration);
-                animatorCompat.scaleX(0).scaleY(0);
-                animatorCompat.setListener(new ViewPropertyAnimatorListener() {
-                    @Override
-                    public void onAnimationStart(View view) {
-                        // Empty body
-                    }
-
-                    @Override
-                    public void onAnimationEnd(View view) {
-                        view.setVisibility(View.GONE);
-                    }
-
-                    @Override
-                    public void onAnimationCancel(View view) {
-                        view.setVisibility(View.GONE);
-                    }
-                });
-                animatorCompat.start();
-            } else {
-                textView.setVisibility(View.GONE);
-            }
-        }
+        hideInternal(animate);
         return getSubInstance();
     }
 
@@ -288,6 +307,6 @@ abstract class BadgeItem<T extends BadgeItem<T>> {
      * @return if the badge is hidden
      */
     public boolean isHidden() {
-        return mIsHidden;
+        return mIsHidden || mIsHiddenAuto;
     }
 }

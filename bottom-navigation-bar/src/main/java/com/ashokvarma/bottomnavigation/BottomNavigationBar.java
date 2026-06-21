@@ -1,5 +1,6 @@
 package com.ashokvarma.bottomnavigation;
 
+import android.animation.Animator;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.res.TypedArray;
@@ -111,6 +112,8 @@ public class BottomNavigationBar extends FrameLayout {
 
     private boolean mAutoHideEnabled;
     private boolean mIsHidden = false;
+
+    private Animator mRippleAnimator;
 
     ///////////////////////////////////////////////////////////////////////////
     // View Default Constructors and Methods
@@ -276,6 +279,17 @@ public class BottomNavigationBar extends FrameLayout {
      */
     public BottomNavigationBar setBackgroundStyle(@BackgroundStyle int backgroundStyle) {
         this.mBackgroundStyle = backgroundStyle;
+        if (!mBottomNavigationTabs.isEmpty() && mContainer != null) {
+            if (mBackgroundStyle == BACKGROUND_STYLE_STATIC) {
+                mBackgroundOverlay.setVisibility(View.GONE);
+                mContainer.setBackgroundColor(mBackgroundColor);
+            } else if (mBackgroundStyle == BACKGROUND_STYLE_RIPPLE) {
+                mBackgroundOverlay.setVisibility(View.VISIBLE);
+                if (mSelectedPosition >= 0 && mSelectedPosition < mBottomNavigationTabs.size()) {
+                    mContainer.setBackgroundColor(mBottomNavigationTabs.get(mSelectedPosition).getActiveColor());
+                }
+            }
+        }
         return this;
     }
 
@@ -321,6 +335,7 @@ public class BottomNavigationBar extends FrameLayout {
      */
     public BottomNavigationBar setBarBackgroundColor(@ColorRes int backgroundColor) {
         this.mBackgroundColor = ContextCompat.getColor(getContext(), backgroundColor);
+        applyBackgroundColor();
         return this;
     }
 
@@ -330,6 +345,7 @@ public class BottomNavigationBar extends FrameLayout {
      */
     public BottomNavigationBar setBarBackgroundColor(String backgroundColorCode) {
         this.mBackgroundColor = Color.parseColor(backgroundColorCode);
+        applyBackgroundColor();
         return this;
     }
 
@@ -452,6 +468,15 @@ public class BottomNavigationBar extends FrameLayout {
         mBackgroundOverlay.setVisibility(View.GONE);
         mContainer.setBackgroundColor(Color.TRANSPARENT);
         mSelectedPosition = DEFAULT_SELECTED_POSITION;
+        mIsHidden = false;
+        if (mTranslationAnimator != null) {
+            mTranslationAnimator.cancel();
+        }
+        this.setTranslationY(0);
+        if (mRippleAnimator != null) {
+            mRippleAnimator.cancel();
+            mRippleAnimator = null;
+        }
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -474,7 +499,7 @@ public class BottomNavigationBar extends FrameLayout {
      * @param callListener should this change call listener callbacks
      */
     public void selectTab(int newPosition, boolean callListener) {
-        selectTabInternal(newPosition, false, callListener, callListener);
+        selectTabInternal(newPosition, false, callListener, false);
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -528,6 +553,7 @@ public class BottomNavigationBar extends FrameLayout {
                 if (mSelectedPosition != -1)
                     mBottomNavigationTabs.get(mSelectedPosition).unSelect(true, mAnimationDuration);
                 mBottomNavigationTabs.get(newPosition).select(true, mAnimationDuration);
+                mContainer.setBackgroundColor(mBottomNavigationTabs.get(newPosition).getActiveColor());
             } else if (mBackgroundStyle == BACKGROUND_STYLE_RIPPLE) {
                 if (mSelectedPosition != -1)
                     mBottomNavigationTabs.get(mSelectedPosition).unSelect(false, mAnimationDuration);
@@ -539,15 +565,13 @@ public class BottomNavigationBar extends FrameLayout {
                     mContainer.setBackgroundColor(clickedView.getActiveColor());
                     mBackgroundOverlay.setVisibility(View.GONE);
                 } else {
+                    if (mRippleAnimator != null) {
+                        mRippleAnimator.cancel();
+                    }
                     mBackgroundOverlay.post(new Runnable() {
                         @Override
                         public void run() {
-//                            try {
-                            BottomNavigationHelper.setBackgroundWithRipple(clickedView, mContainer, mBackgroundOverlay, clickedView.getActiveColor(), mRippleAnimationDuration);
-//                            } catch (Exception e) {
-//                                mContainer.setBackgroundColor(clickedView.getActiveColor());
-//                                mBackgroundOverlay.setVisibility(View.GONE);
-//                            }
+                            mRippleAnimator = BottomNavigationHelper.setBackgroundWithRipple(clickedView, mContainer, mBackgroundOverlay, clickedView.getActiveColor(), mRippleAnimationDuration);
                         }
                     });
                 }
@@ -557,6 +581,18 @@ public class BottomNavigationBar extends FrameLayout {
 
         if (callListener) {
             sendListenerCall(oldPosition, newPosition, forcedSelection);
+        }
+    }
+
+    private void applyBackgroundColor() {
+        if (mContainer == null) {
+            return;
+        }
+        if (mBackgroundStyle == BACKGROUND_STYLE_STATIC) {
+            mContainer.setBackgroundColor(mBackgroundColor);
+            for (BottomNavigationTab tab : mBottomNavigationTabs) {
+                tab.setItemBackgroundColor(mBackgroundColor);
+            }
         }
     }
 

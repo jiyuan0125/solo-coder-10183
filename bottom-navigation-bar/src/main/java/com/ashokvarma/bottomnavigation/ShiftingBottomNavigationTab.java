@@ -57,10 +57,12 @@ class ShiftingBottomNavigationTab extends BottomNavigationTab {
     public void select(boolean setActiveColor, int animationDuration) {
         super.select(setActiveColor, animationDuration);
 
+        this.clearAnimation();
         ResizeWidthAnimation anim = new ResizeWidthAnimation(this, mActiveWidth);
         anim.setDuration(animationDuration);
         this.startAnimation(anim);
 
+        labelView.animate().cancel();
         labelView.animate().scaleY(1).scaleX(1).setDuration(animationDuration).start();
     }
 
@@ -68,10 +70,12 @@ class ShiftingBottomNavigationTab extends BottomNavigationTab {
     public void unSelect(boolean setActiveColor, int animationDuration) {
         super.unSelect(setActiveColor, animationDuration);
 
+        this.clearAnimation();
         ResizeWidthAnimation anim = new ResizeWidthAnimation(this, mInActiveWidth);
         anim.setDuration(animationDuration);
         this.startAnimation(anim);
 
+        labelView.animate().cancel();
         labelView.animate().scaleY(0).scaleX(0).setDuration(0).start();
     }
 

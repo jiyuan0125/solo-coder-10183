@@ -49,6 +49,7 @@ public class ShapeBadgeItem extends BadgeItem<ShapeBadgeItem> {
     private String mShapeColorCode;
     private int mShapeColorResource;
     private int mShapeColor = Color.RED;
+    private boolean mShapeColorSet;
 
     // init values set at bindToBottomTabInternal
     private int mHeightInPixels;
@@ -109,6 +110,7 @@ public class ShapeBadgeItem extends BadgeItem<ShapeBadgeItem> {
      */
     public ShapeBadgeItem setShapeColor(int color) {
         this.mShapeColor = color;
+        this.mShapeColorSet = true;
         refreshColor();
         return this;
     }
@@ -234,8 +236,10 @@ public class ShapeBadgeItem extends BadgeItem<ShapeBadgeItem> {
             return ContextCompat.getColor(context, mShapeColorResource);
         } else if (!TextUtils.isEmpty(mShapeColorCode)) {
             return Color.parseColor(mShapeColorCode);
-        } else {
+        } else if (mShapeColorSet) {
             return mShapeColor;
+        } else {
+            return Color.RED;
         }
     }
 

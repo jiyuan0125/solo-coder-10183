@@ -49,6 +49,8 @@ abstract class BottomNavigationTab extends FrameLayout {
 
     boolean isActive = false;
 
+    ValueAnimator mPaddingAnimator;
+
     View containerView;
     TextView labelView;
     ImageView iconView;
@@ -143,8 +145,11 @@ abstract class BottomNavigationTab extends FrameLayout {
     public void select(boolean setActiveColor, int animationDuration) {
         isActive = true;
 
-        ValueAnimator animator = ValueAnimator.ofInt(containerView.getPaddingTop(), paddingTopActive);
-        animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+        if (mPaddingAnimator != null) {
+            mPaddingAnimator.cancel();
+        }
+        mPaddingAnimator = ValueAnimator.ofInt(containerView.getPaddingTop(), paddingTopActive);
+        mPaddingAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator valueAnimator) {
                 containerView.setPadding(containerView.getPaddingLeft(),
@@ -153,8 +158,8 @@ abstract class BottomNavigationTab extends FrameLayout {
                         containerView.getPaddingBottom());
             }
         });
-        animator.setDuration(animationDuration);
-        animator.start();
+        mPaddingAnimator.setDuration(animationDuration);
+        mPaddingAnimator.start();
 
         iconView.setSelected(true);
         if (setActiveColor) {
@@ -171,8 +176,11 @@ abstract class BottomNavigationTab extends FrameLayout {
     public void unSelect(boolean setActiveColor, int animationDuration) {
         isActive = false;
 
-        ValueAnimator animator = ValueAnimator.ofInt(containerView.getPaddingTop(), paddingTopInActive);
-        animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+        if (mPaddingAnimator != null) {
+            mPaddingAnimator.cancel();
+        }
+        mPaddingAnimator = ValueAnimator.ofInt(containerView.getPaddingTop(), paddingTopInActive);
+        mPaddingAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator valueAnimator) {
                 containerView.setPadding(containerView.getPaddingLeft(),
@@ -181,8 +189,8 @@ abstract class BottomNavigationTab extends FrameLayout {
                         containerView.getPaddingBottom());
             }
         });
-        animator.setDuration(animationDuration);
-        animator.start();
+        mPaddingAnimator.setDuration(animationDuration);
+        mPaddingAnimator.start();
 
         labelView.setTextColor(mInActiveColor);
         iconView.setSelected(false);
