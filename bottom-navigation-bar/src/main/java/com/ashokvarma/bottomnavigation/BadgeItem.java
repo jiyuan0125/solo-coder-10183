@@ -26,7 +26,8 @@ abstract class BadgeItem<T extends BadgeItem<T>> {
 
     private WeakReference<BadgeTextView> mTextViewRef;
 
-    private boolean mIsHidden = false;
+    private boolean mUserShowIntent = false;
+    private boolean mUserHideIntent = false;
     private boolean mIsHiddenAuto = false;
 
     private int mAnimationDuration = 200;
@@ -229,7 +230,7 @@ abstract class BadgeItem<T extends BadgeItem<T>> {
      * callback from bottom navigation tab when it is selected
      */
     void select() {
-        if (mHideOnSelect) {
+        if (mHideOnSelect && !mUserShowIntent && !mUserHideIntent) {
             mIsHiddenAuto = true;
             updateViewVisibility(true);
         }
@@ -239,7 +240,7 @@ abstract class BadgeItem<T extends BadgeItem<T>> {
      * callback from bottom navigation tab when it is un-selected
      */
     void unSelect() {
-        if (mHideOnSelect) {
+        if (mHideOnSelect && !mUserShowIntent && !mUserHideIntent) {
             mIsHiddenAuto = false;
             updateViewVisibility(true);
         }
@@ -280,7 +281,8 @@ abstract class BadgeItem<T extends BadgeItem<T>> {
      * @return this, to allow builder pattern
      */
     public T show(boolean animate) {
-        mIsHidden = false;
+        mUserShowIntent = true;
+        mUserHideIntent = false;
         mIsHiddenAuto = false;
         showInternal(animate);
         return getSubInstance();
@@ -298,7 +300,8 @@ abstract class BadgeItem<T extends BadgeItem<T>> {
      * @return this, to allow builder pattern
      */
     public T hide(boolean animate) {
-        mIsHidden = true;
+        mUserShowIntent = false;
+        mUserHideIntent = true;
         hideInternal(animate);
         return getSubInstance();
     }
@@ -307,6 +310,12 @@ abstract class BadgeItem<T extends BadgeItem<T>> {
      * @return if the badge is hidden
      */
     public boolean isHidden() {
-        return mIsHidden || mIsHiddenAuto;
+        if (mUserHideIntent) {
+            return true;
+        }
+        if (mUserShowIntent) {
+            return false;
+        }
+        return mIsHiddenAuto;
     }
 }
