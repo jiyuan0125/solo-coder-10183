@@ -35,11 +35,11 @@ public class BottomNavigationItem {
 
     private int mActiveColorResource;
     private String mActiveColorCode;
-    private int mActiveColor;
+    private int mActiveColor = Utils.NO_COLOR;
 
     private int mInActiveColorResource;
     private String mInActiveColorCode;
-    private int mInActiveColor;
+    private int mInActiveColor = Utils.NO_COLOR;
 
     private BadgeItem mBadgeItem;
 
@@ -214,7 +214,7 @@ public class BottomNavigationItem {
      */
     Drawable getInactiveIcon(Context context) {
         if (this.mInactiveIconResource != 0) {
-            return ContextCompat.getDrawable(context, this.mInactiveIconResource);
+            return ContextCompat.getDrawable(context, mInactiveIconResource);
         } else {
             return this.mInactiveIcon;
         }
@@ -229,14 +229,14 @@ public class BottomNavigationItem {
 
     /**
      * @param context to fetch color
-     * @return active color (or) -1 if no color is specified
+     * @return active color (or) Utils.NO_COLOR if no color is specified
      */
     int getActiveColor(Context context) {
         if (this.mActiveColorResource != 0) {
             return ContextCompat.getColor(context, mActiveColorResource);
         } else if (!TextUtils.isEmpty(mActiveColorCode)) {
             return Color.parseColor(mActiveColorCode);
-        } else if (this.mActiveColor != 0) {
+        } else if (this.mActiveColor != Utils.NO_COLOR) {
             return mActiveColor;
         } else {
             return Utils.NO_COLOR;
@@ -245,14 +245,14 @@ public class BottomNavigationItem {
 
     /**
      * @param context to fetch color
-     * @return in-active color (or) -1 if no color is specified
+     * @return in-active color (or) Utils.NO_COLOR if no color is specified
      */
     int getInActiveColor(Context context) {
         if (this.mInActiveColorResource != 0) {
             return ContextCompat.getColor(context, mInActiveColorResource);
         } else if (!TextUtils.isEmpty(mInActiveColorCode)) {
             return Color.parseColor(mInActiveColorCode);
-        } else if (this.mInActiveColor != 0) {
+        } else if (this.mInActiveColor != Utils.NO_COLOR) {
             return mInActiveColor;
         } else {
             return Utils.NO_COLOR;

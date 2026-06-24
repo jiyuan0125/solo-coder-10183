@@ -10,6 +10,8 @@ import androidx.annotation.ColorRes;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 
+import com.ashokvarma.bottomnavigation.utils.Utils;
+
 /**
  * Class description
  *
@@ -22,17 +24,17 @@ public class TextBadgeItem extends BadgeItem<TextBadgeItem> {
 
     private int mBackgroundColorResource;
     private String mBackgroundColorCode;
-    private int mBackgroundColor = Color.RED;
+    private int mBackgroundColor = Utils.NO_COLOR;
 
     private int mTextColorResource;
     private String mTextColorCode;
-    private int mTextColor = Color.WHITE;
+    private int mTextColor = Utils.NO_COLOR;
 
     private CharSequence mText;
 
     private int mBorderColorResource;
     private String mBorderColorCode;
-    private int mBorderColor = Color.WHITE;
+    private int mBorderColor = Utils.NO_COLOR;
 
     private int mBorderWidthInPixels = 0;
 
@@ -206,8 +208,10 @@ public class TextBadgeItem extends BadgeItem<TextBadgeItem> {
             return ContextCompat.getColor(context, mBackgroundColorResource);
         } else if (!TextUtils.isEmpty(mBackgroundColorCode)) {
             return Color.parseColor(mBackgroundColorCode);
-        } else {
+        } else if (mBackgroundColor != Utils.NO_COLOR) {
             return mBackgroundColor;
+        } else {
+            return Color.RED;
         }
     }
 
@@ -220,8 +224,10 @@ public class TextBadgeItem extends BadgeItem<TextBadgeItem> {
             return ContextCompat.getColor(context, mTextColorResource);
         } else if (!TextUtils.isEmpty(mTextColorCode)) {
             return Color.parseColor(mTextColorCode);
-        } else {
+        } else if (mTextColor != Utils.NO_COLOR) {
             return mTextColor;
+        } else {
+            return Color.WHITE;
         }
     }
 
@@ -241,8 +247,10 @@ public class TextBadgeItem extends BadgeItem<TextBadgeItem> {
             return ContextCompat.getColor(context, mBorderColorResource);
         } else if (!TextUtils.isEmpty(mBorderColorCode)) {
             return Color.parseColor(mBorderColorCode);
-        } else {
+        } else if (mBorderColor != Utils.NO_COLOR) {
             return mBorderColor;
+        } else {
+            return Color.WHITE;
         }
     }
 

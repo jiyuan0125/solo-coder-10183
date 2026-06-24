@@ -157,13 +157,19 @@ class BottomNavigationHelper {
      * @param bgOverlay         temporary view which is animated to get ripple effect
      * @param newColor          the new color i.e ripple color
      * @param animationDuration duration for which animation runs
+     * @param currentRippleAnimator reference to hold the current ripple animator for cancellation
+     * @return the started Animator so caller can track it
      */
-    static void setBackgroundWithRipple(View clickedView, final View backgroundView,
-                                        final View bgOverlay, final int newColor, int animationDuration) {
+    static Animator setBackgroundWithRipple(View clickedView, final View backgroundView,
+                                            final View bgOverlay, final int newColor, int animationDuration,
+                                            Animator currentRippleAnimator) {
         int centerX = (int) (clickedView.getX() + (clickedView.getMeasuredWidth() / 2));
-        int centerY = clickedView.getMeasuredHeight() / 2;
+        int centerY = (int) (clickedView.getY() + (clickedView.getMeasuredHeight() / 2));
         int finalRadius = backgroundView.getWidth();
 
+        if (currentRippleAnimator != null) {
+            currentRippleAnimator.cancel();
+        }
         backgroundView.clearAnimation();
         bgOverlay.clearAnimation();
 
@@ -198,5 +204,6 @@ class BottomNavigationHelper {
         bgOverlay.setBackgroundColor(newColor);
         bgOverlay.setVisibility(View.VISIBLE);
         circularReveal.start();
+        return circularReveal;
     }
 }

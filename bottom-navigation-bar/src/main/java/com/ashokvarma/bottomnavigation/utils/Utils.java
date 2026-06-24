@@ -16,7 +16,7 @@ import android.view.WindowManager;
  */
 public class Utils {
 
-    public static final int NO_COLOR = Color.TRANSPARENT;
+    public static final int NO_COLOR = Integer.MIN_VALUE;
 
     private Utils() {
     }

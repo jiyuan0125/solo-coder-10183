@@ -6,6 +6,7 @@ import android.view.animation.Interpolator;
 
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.view.ViewCompat;
+import androidx.core.view.ViewPropertyAnimatorCompat;
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator;
 
 import com.ashokvarma.bottomnavigation.BottomNavigationBar;
@@ -26,6 +27,7 @@ public class BottomVerticalScrollBehavior<V extends View> extends VerticalScroll
     private static final Interpolator INTERPOLATOR = new FastOutSlowInInterpolator();
     private int mBottomNavHeight;
     private WeakReference<BottomNavigationBar> mViewRef;
+    private ViewPropertyAnimatorCompat mSnackbarAnimator;
 
     ///////////////////////////////////////////////////////////////////////////
     // onBottomBar changes
@@ -77,7 +79,15 @@ public class BottomVerticalScrollBehavior<V extends View> extends VerticalScroll
 
     private void updateSnackBarPosition(CoordinatorLayout parent, V child, View dependency, float translationY) {
         if (dependency != null && dependency instanceof Snackbar.SnackbarLayout) {
-            ViewCompat.animate(dependency).setInterpolator(INTERPOLATOR).setDuration(80).setStartDelay(0).translationY(translationY).start();
+            if (mSnackbarAnimator != null) {
+                mSnackbarAnimator.cancel();
+            }
+            mSnackbarAnimator = ViewCompat.animate(dependency);
+            mSnackbarAnimator.setInterpolator(INTERPOLATOR);
+            mSnackbarAnimator.setDuration(80);
+            mSnackbarAnimator.setStartDelay(0);
+            mSnackbarAnimator.translationY(translationY);
+            mSnackbarAnimator.start();
         }
     }
 
@@ -103,14 +113,14 @@ public class BottomVerticalScrollBehavior<V extends View> extends VerticalScroll
 
     @Override
     public void onNestedVerticalPreScroll(CoordinatorLayout coordinatorLayout, V child, View target, int dx, int dy, int[] consumed, @ScrollDirection int scrollDirection) {
-//        handleDirection(child, scrollDirection);
+        handleDirection(coordinatorLayout, child, scrollDirection);
     }
 
     @Override
     protected boolean onNestedDirectionFling(CoordinatorLayout coordinatorLayout, V child, View target, float velocityX, float velocityY, boolean consumed, @ScrollDirection int scrollDirection) {
-//        if (consumed) {
-//            handleDirection(child, scrollDirection);
-//        }
+        if (consumed) {
+            handleDirection(coordinatorLayout, child, scrollDirection);
+        }
         return consumed;
     }
 
@@ -123,11 +133,11 @@ public class BottomVerticalScrollBehavior<V extends View> extends VerticalScroll
         BottomNavigationBar bottomNavigationBar = mViewRef.get();
         if (bottomNavigationBar != null && bottomNavigationBar.isAutoHideEnabled()) {
             if (scrollDirection == ScrollDirection.SCROLL_DIRECTION_DOWN && bottomNavigationBar.isHidden()) {
-                updateSnackBarPosition(parent, child, getSnackBarInstance(parent, child), -mBottomNavHeight);
                 bottomNavigationBar.show();
+                updateSnackBarPosition(parent, child, getSnackBarInstance(parent, child), child.getTranslationY() - child.getHeight());
             } else if (scrollDirection == ScrollDirection.SCROLL_DIRECTION_UP && !bottomNavigationBar.isHidden()) {
-                updateSnackBarPosition(parent, child, getSnackBarInstance(parent, child), 0);
                 bottomNavigationBar.hide();
+                updateSnackBarPosition(parent, child, getSnackBarInstance(parent, child), child.getTranslationY() - child.getHeight());
             }
         }
     }

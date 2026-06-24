@@ -1,5 +1,6 @@
 package com.ashokvarma.bottomnavigation;
 
+import android.animation.Animator;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.res.TypedArray;
@@ -24,7 +25,6 @@ import androidx.interpolator.view.animation.LinearOutSlowInInterpolator;
 
 import com.ashokvarma.bottomnavigation.behaviour.BottomNavBarFabBehaviour;
 import com.ashokvarma.bottomnavigation.behaviour.BottomVerticalScrollBehavior;
-import com.ashokvarma.bottomnavigation.utils.Utils;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.lang.annotation.Retention;
@@ -103,6 +103,8 @@ public class BottomNavigationBar extends FrameLayout {
     private FrameLayout mContainer;
     private LinearLayout mTabContainer;
 
+    private Animator mRippleAnimator;
+
     private static final int DEFAULT_ANIMATION_DURATION = 200;
     private int mAnimationDuration = DEFAULT_ANIMATION_DURATION;
     private int mRippleAnimationDuration = (int) (DEFAULT_ANIMATION_DURATION * 2.5);
@@ -148,7 +150,7 @@ public class BottomNavigationBar extends FrameLayout {
         if (attrs != null) {
             TypedArray typedArray = context.getTheme().obtainStyledAttributes(attrs, R.styleable.BottomNavigationBar, 0, 0);
 
-            mActiveColor = typedArray.getColor(R.styleable.BottomNavigationBar_bnbActiveColor, Utils.fetchContextColor(context, R.attr.colorAccent));
+            mActiveColor = typedArray.getColor(R.styleable.BottomNavigationBar_bnbActiveColor, com.ashokvarma.bottomnavigation.utils.Utils.fetchContextColor(context, R.attr.colorAccent));
             mInActiveColor = typedArray.getColor(R.styleable.BottomNavigationBar_bnbInactiveColor, Color.LTGRAY);
             mBackgroundColor = typedArray.getColor(R.styleable.BottomNavigationBar_bnbBackgroundColor, Color.WHITE);
             mAutoHideEnabled = typedArray.getBoolean(R.styleable.BottomNavigationBar_bnbAutoHideEnabled, true);
@@ -196,7 +198,7 @@ public class BottomNavigationBar extends FrameLayout {
 
             typedArray.recycle();
         } else {
-            mActiveColor = Utils.fetchContextColor(context, R.attr.colorAccent);
+            mActiveColor = com.ashokvarma.bottomnavigation.utils.Utils.fetchContextColor(context, R.attr.colorAccent);
             mInActiveColor = Color.LTGRAY;
             mBackgroundColor = Color.WHITE;
             mElevation = getResources().getDimension(R.dimen.bottom_navigation_elevation);
@@ -276,6 +278,30 @@ public class BottomNavigationBar extends FrameLayout {
      */
     public BottomNavigationBar setBackgroundStyle(@BackgroundStyle int backgroundStyle) {
         this.mBackgroundStyle = backgroundStyle;
+        if (mContainer != null) {
+            if (mBackgroundStyle == BACKGROUND_STYLE_STATIC) {
+                if (mBackgroundOverlay != null) {
+                    if (mRippleAnimator != null) {
+                        mRippleAnimator.cancel();
+                        mRippleAnimator = null;
+                    }
+                    mBackgroundOverlay.setVisibility(View.GONE);
+                }
+                mContainer.setBackgroundColor(mBackgroundColor);
+                if (mSelectedPosition != DEFAULT_SELECTED_POSITION && !mBottomNavigationTabs.isEmpty() && mSelectedPosition < mBottomNavigationTabs.size()) {
+                    mContainer.setBackgroundColor(mBottomNavigationTabs.get(mSelectedPosition).getActiveColor());
+                }
+            } else if (mBackgroundStyle == BACKGROUND_STYLE_RIPPLE) {
+                if (mBackgroundOverlay != null) {
+                    mBackgroundOverlay.setVisibility(View.VISIBLE);
+                    mBackgroundOverlay.setBackgroundColor(Color.TRANSPARENT);
+                }
+                mContainer.setBackgroundColor(mBackgroundColor);
+                if (mSelectedPosition != DEFAULT_SELECTED_POSITION && !mBottomNavigationTabs.isEmpty() && mSelectedPosition < mBottomNavigationTabs.size()) {
+                    mContainer.setBackgroundColor(mBottomNavigationTabs.get(mSelectedPosition).getActiveColor());
+                }
+            }
+        }
         return this;
     }
 
@@ -321,6 +347,7 @@ public class BottomNavigationBar extends FrameLayout {
      */
     public BottomNavigationBar setBarBackgroundColor(@ColorRes int backgroundColor) {
         this.mBackgroundColor = ContextCompat.getColor(getContext(), backgroundColor);
+        applyBackgroundColorRuntime();
         return this;
     }
 
@@ -330,7 +357,26 @@ public class BottomNavigationBar extends FrameLayout {
      */
     public BottomNavigationBar setBarBackgroundColor(String backgroundColorCode) {
         this.mBackgroundColor = Color.parseColor(backgroundColorCode);
+        applyBackgroundColorRuntime();
         return this;
+    }
+
+    private void applyBackgroundColorRuntime() {
+        if (mContainer != null) {
+            if (mBackgroundStyle == BACKGROUND_STYLE_STATIC) {
+                if (mSelectedPosition != DEFAULT_SELECTED_POSITION && !mBottomNavigationTabs.isEmpty() && mSelectedPosition < mBottomNavigationTabs.size()) {
+                    mContainer.setBackgroundColor(mBottomNavigationTabs.get(mSelectedPosition).getActiveColor());
+                } else {
+                    mContainer.setBackgroundColor(mBackgroundColor);
+                }
+            } else if (mBackgroundStyle == BACKGROUND_STYLE_RIPPLE) {
+                if (mSelectedPosition != DEFAULT_SELECTED_POSITION && !mBottomNavigationTabs.isEmpty() && mSelectedPosition < mBottomNavigationTabs.size()) {
+                    mContainer.setBackgroundColor(mBottomNavigationTabs.get(mSelectedPosition).getActiveColor());
+                } else {
+                    mContainer.setBackgroundColor(mBackgroundColor);
+                }
+            }
+        }
     }
 
     /**
@@ -384,7 +430,7 @@ public class BottomNavigationBar extends FrameLayout {
                 mContainer.setBackgroundColor(mBackgroundColor);
             }
 
-            int screenWidth = Utils.getScreenWidth(getContext());
+            int screenWidth = com.ashokvarma.bottomnavigation.utils.Utils.getScreenWidth(getContext());
 
             if (mMode == MODE_FIXED || mMode == MODE_FIXED_NO_TITLE) {
 
@@ -446,12 +492,28 @@ public class BottomNavigationBar extends FrameLayout {
      * Clears all stored data and this helps to re-initialise tabs from scratch
      */
     public void clearAll() {
+        if (mRippleAnimator != null) {
+            mRippleAnimator.cancel();
+            mRippleAnimator = null;
+        }
+        for (BottomNavigationTab tab : mBottomNavigationTabs) {
+            tab.cancelAnimations();
+        }
         mTabContainer.removeAllViews();
         mBottomNavigationTabs.clear();
         mBottomNavigationItems.clear();
-        mBackgroundOverlay.setVisibility(View.GONE);
-        mContainer.setBackgroundColor(Color.TRANSPARENT);
+        if (mBackgroundOverlay != null) {
+            mBackgroundOverlay.setVisibility(View.GONE);
+        }
+        if (mContainer != null) {
+            mContainer.setBackgroundColor(Color.TRANSPARENT);
+        }
         mSelectedPosition = DEFAULT_SELECTED_POSITION;
+        mIsHidden = false;
+        if (mTranslationAnimator != null) {
+            mTranslationAnimator.cancel();
+        }
+        this.setTranslationY(0);
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -474,7 +536,7 @@ public class BottomNavigationBar extends FrameLayout {
      * @param callListener should this change call listener callbacks
      */
     public void selectTab(int newPosition, boolean callListener) {
-        selectTabInternal(newPosition, false, callListener, callListener);
+        selectTabInternal(newPosition, false, callListener, false);
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -527,7 +589,9 @@ public class BottomNavigationBar extends FrameLayout {
             if (mBackgroundStyle == BACKGROUND_STYLE_STATIC) {
                 if (mSelectedPosition != -1)
                     mBottomNavigationTabs.get(mSelectedPosition).unSelect(true, mAnimationDuration);
-                mBottomNavigationTabs.get(newPosition).select(true, mAnimationDuration);
+                BottomNavigationTab newTab = mBottomNavigationTabs.get(newPosition);
+                newTab.select(true, mAnimationDuration);
+                mContainer.setBackgroundColor(newTab.getActiveColor());
             } else if (mBackgroundStyle == BACKGROUND_STYLE_RIPPLE) {
                 if (mSelectedPosition != -1)
                     mBottomNavigationTabs.get(mSelectedPosition).unSelect(false, mAnimationDuration);
@@ -535,19 +599,15 @@ public class BottomNavigationBar extends FrameLayout {
 
                 final BottomNavigationTab clickedView = mBottomNavigationTabs.get(newPosition);
                 if (firstTab) {
-                    // Running a ripple on the opening app won't be good so on firstTab this won't run.
                     mContainer.setBackgroundColor(clickedView.getActiveColor());
                     mBackgroundOverlay.setVisibility(View.GONE);
                 } else {
                     mBackgroundOverlay.post(new Runnable() {
                         @Override
                         public void run() {
-//                            try {
-                            BottomNavigationHelper.setBackgroundWithRipple(clickedView, mContainer, mBackgroundOverlay, clickedView.getActiveColor(), mRippleAnimationDuration);
-//                            } catch (Exception e) {
-//                                mContainer.setBackgroundColor(clickedView.getActiveColor());
-//                                mBackgroundOverlay.setVisibility(View.GONE);
-//                            }
+                            mRippleAnimator = BottomNavigationHelper.setBackgroundWithRipple(
+                                    clickedView, mContainer, mBackgroundOverlay,
+                                    clickedView.getActiveColor(), mRippleAnimationDuration, mRippleAnimator);
                         }
                     });
                 }
@@ -570,16 +630,12 @@ public class BottomNavigationBar extends FrameLayout {
     private void sendListenerCall(int oldPosition, int newPosition, boolean forcedSelection) {
         if (mTabSelectedListener != null) {
 //                && oldPosition != -1) {
-            if (forcedSelection) {
-                mTabSelectedListener.onTabSelected(newPosition);
+            if (oldPosition == newPosition) {
+                mTabSelectedListener.onTabReselected(newPosition);
             } else {
-                if (oldPosition == newPosition) {
-                    mTabSelectedListener.onTabReselected(newPosition);
-                } else {
-                    mTabSelectedListener.onTabSelected(newPosition);
-                    if (oldPosition != -1) {
-                        mTabSelectedListener.onTabUnselected(oldPosition);
-                    }
+                mTabSelectedListener.onTabSelected(newPosition);
+                if (oldPosition != -1) {
+                    mTabSelectedListener.onTabUnselected(oldPosition);
                 }
             }
         }

@@ -57,16 +57,24 @@ class FixedBottomNavigationTab extends BottomNavigationTab {
 
     @Override
     public void select(boolean setActiveColor, int animationDuration) {
+        labelView.animate().cancel();
         labelView.animate().scaleX(1).scaleY(1).setDuration(animationDuration).start();
-//        labelView.setTextSize(TypedValue.COMPLEX_UNIT_PX, getResources().getDimension(R.dimen.fixed_label_active));
         super.select(setActiveColor, animationDuration);
     }
 
     @Override
     public void unSelect(boolean setActiveColor, int animationDuration) {
+        labelView.animate().cancel();
         labelView.animate().scaleX(labelScale).scaleY(labelScale).setDuration(animationDuration).start();
-//        labelView.setTextSize(TypedValue.COMPLEX_UNIT_PX, getResources().getDimension(R.dimen.fixed_label_inactive));
         super.unSelect(setActiveColor, animationDuration);
+    }
+
+    @Override
+    public void cancelAnimations() {
+        super.cancelAnimations();
+        if (labelView != null) {
+            labelView.animate().cancel();
+        }
     }
 
     @Override

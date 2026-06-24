@@ -20,6 +20,8 @@ import android.widget.FrameLayout;
  */
 class ShiftingBottomNavigationTab extends BottomNavigationTab {
 
+    private Animation mResizeAnimation;
+
     public ShiftingBottomNavigationTab(Context context) {
         super(context);
     }
@@ -57,10 +59,14 @@ class ShiftingBottomNavigationTab extends BottomNavigationTab {
     public void select(boolean setActiveColor, int animationDuration) {
         super.select(setActiveColor, animationDuration);
 
-        ResizeWidthAnimation anim = new ResizeWidthAnimation(this, mActiveWidth);
-        anim.setDuration(animationDuration);
-        this.startAnimation(anim);
+        if (mResizeAnimation != null) {
+            mResizeAnimation.cancel();
+        }
+        mResizeAnimation = new ResizeWidthAnimation(this, mActiveWidth);
+        mResizeAnimation.setDuration(animationDuration);
+        this.startAnimation(mResizeAnimation);
 
+        labelView.animate().cancel();
         labelView.animate().scaleY(1).scaleX(1).setDuration(animationDuration).start();
     }
 
@@ -68,11 +74,27 @@ class ShiftingBottomNavigationTab extends BottomNavigationTab {
     public void unSelect(boolean setActiveColor, int animationDuration) {
         super.unSelect(setActiveColor, animationDuration);
 
-        ResizeWidthAnimation anim = new ResizeWidthAnimation(this, mInActiveWidth);
-        anim.setDuration(animationDuration);
-        this.startAnimation(anim);
+        if (mResizeAnimation != null) {
+            mResizeAnimation.cancel();
+        }
+        mResizeAnimation = new ResizeWidthAnimation(this, mInActiveWidth);
+        mResizeAnimation.setDuration(animationDuration);
+        this.startAnimation(mResizeAnimation);
 
+        labelView.animate().cancel();
         labelView.animate().scaleY(0).scaleX(0).setDuration(0).start();
+    }
+
+    @Override
+    public void cancelAnimations() {
+        super.cancelAnimations();
+        if (mResizeAnimation != null) {
+            mResizeAnimation.cancel();
+            mResizeAnimation = null;
+        }
+        if (labelView != null) {
+            labelView.animate().cancel();
+        }
     }
 
     @Override

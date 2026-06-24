@@ -11,6 +11,7 @@ import android.util.AttributeSet;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -55,6 +56,9 @@ abstract class BottomNavigationTab extends FrameLayout {
     FrameLayout iconContainerView;
     BadgeTextView badgeView;
 
+    private ValueAnimator mPaddingAnimator;
+    protected ValueAnimator.AnimatorUpdateListener mPaddingUpdateListener;
+
     public BottomNavigationTab(Context context) {
         this(context, null);
     }
@@ -76,6 +80,15 @@ abstract class BottomNavigationTab extends FrameLayout {
 
     void init() {
         setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        mPaddingUpdateListener = new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator valueAnimator) {
+                containerView.setPadding(containerView.getPaddingLeft(),
+                        (Integer) valueAnimator.getAnimatedValue(),
+                        containerView.getPaddingRight(),
+                        containerView.getPaddingBottom());
+            }
+        };
     }
 
     public void setIsNoTitleMode(boolean isNoTitleMode) {
@@ -143,18 +156,13 @@ abstract class BottomNavigationTab extends FrameLayout {
     public void select(boolean setActiveColor, int animationDuration) {
         isActive = true;
 
-        ValueAnimator animator = ValueAnimator.ofInt(containerView.getPaddingTop(), paddingTopActive);
-        animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator valueAnimator) {
-                containerView.setPadding(containerView.getPaddingLeft(),
-                        (Integer) valueAnimator.getAnimatedValue(),
-                        containerView.getPaddingRight(),
-                        containerView.getPaddingBottom());
-            }
-        });
-        animator.setDuration(animationDuration);
-        animator.start();
+        if (mPaddingAnimator != null) {
+            mPaddingAnimator.cancel();
+        }
+        mPaddingAnimator = ValueAnimator.ofInt(containerView.getPaddingTop(), paddingTopActive);
+        mPaddingAnimator.addUpdateListener(mPaddingUpdateListener);
+        mPaddingAnimator.setDuration(animationDuration);
+        mPaddingAnimator.start();
 
         iconView.setSelected(true);
         if (setActiveColor) {
@@ -171,24 +179,37 @@ abstract class BottomNavigationTab extends FrameLayout {
     public void unSelect(boolean setActiveColor, int animationDuration) {
         isActive = false;
 
-        ValueAnimator animator = ValueAnimator.ofInt(containerView.getPaddingTop(), paddingTopInActive);
-        animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator valueAnimator) {
-                containerView.setPadding(containerView.getPaddingLeft(),
-                        (Integer) valueAnimator.getAnimatedValue(),
-                        containerView.getPaddingRight(),
-                        containerView.getPaddingBottom());
-            }
-        });
-        animator.setDuration(animationDuration);
-        animator.start();
+        if (mPaddingAnimator != null) {
+            mPaddingAnimator.cancel();
+        }
+        mPaddingAnimator = ValueAnimator.ofInt(containerView.getPaddingTop(), paddingTopInActive);
+        mPaddingAnimator.addUpdateListener(mPaddingUpdateListener);
+        mPaddingAnimator.setDuration(animationDuration);
+        mPaddingAnimator.start();
 
         labelView.setTextColor(mInActiveColor);
         iconView.setSelected(false);
 
         if (badgeItem != null) {
             badgeItem.unSelect();
+        }
+    }
+
+    public void cancelAnimations() {
+        if (mPaddingAnimator != null) {
+            mPaddingAnimator.cancel();
+            mPaddingAnimator = null;
+        }
+        this.clearAnimation();
+        if (labelView != null) {
+            labelView.clearAnimation();
+            labelView.animate().cancel();
+        }
+        if (iconView != null) {
+            iconView.clearAnimation();
+        }
+        if (containerView != null) {
+            containerView.clearAnimation();
         }
     }
 
@@ -251,5 +272,5 @@ abstract class BottomNavigationTab extends FrameLayout {
 
     protected abstract void setNoTitleIconContainerParams(FrameLayout.LayoutParams layoutParams);
 
-    protected abstract void setNoTitleIconParams(FrameLayout.LayoutParams layoutParams);
+    protected abstract void setNoTitleIconParams(LayoutParams layoutParams);
 }

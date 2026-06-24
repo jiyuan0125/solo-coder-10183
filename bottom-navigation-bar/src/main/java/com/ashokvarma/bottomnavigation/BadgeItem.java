@@ -26,7 +26,8 @@ abstract class BadgeItem<T extends BadgeItem<T>> {
 
     private WeakReference<BadgeTextView> mTextViewRef;
 
-    private boolean mIsHidden = false;
+    private boolean mIsHiddenByUser = false;
+    private boolean mIsHiddenByAutoSelect = false;
 
     private int mAnimationDuration = 200;
 
@@ -114,7 +115,7 @@ abstract class BadgeItem<T extends BadgeItem<T>> {
         if (isHidden()) {
             // if hide is called before the initialisation of bottom-bar this will handle that
             // by hiding it.
-            hide();
+            hideView(true, false);
         }
     }
 
@@ -170,7 +171,8 @@ abstract class BadgeItem<T extends BadgeItem<T>> {
      */
     void select() {
         if (mHideOnSelect) {
-            hide(true);
+            mIsHiddenByAutoSelect = true;
+            updateVisibility();
         }
     }
 
@@ -179,7 +181,8 @@ abstract class BadgeItem<T extends BadgeItem<T>> {
      */
     void unSelect() {
         if (mHideOnSelect) {
-            show(true);
+            mIsHiddenByAutoSelect = false;
+            updateVisibility();
         }
     }
 
@@ -199,7 +202,7 @@ abstract class BadgeItem<T extends BadgeItem<T>> {
      * @return this, to allow builder pattern
      */
     public T toggle(boolean animate) {
-        if (mIsHidden) {
+        if (mIsHiddenByUser) {
             return show(animate);
         } else {
             return hide(animate);
@@ -218,7 +221,49 @@ abstract class BadgeItem<T extends BadgeItem<T>> {
      * @return this, to allow builder pattern
      */
     public T show(boolean animate) {
-        mIsHidden = false;
+        mIsHiddenByUser = false;
+        mIsHiddenByAutoSelect = false;
+        updateVisibility(animate);
+        return getSubInstance();
+    }
+
+    /**
+     * @return this, to allow builder pattern
+     */
+    public T hide() {
+        return hide(true);
+    }
+
+    /**
+     * @param animate whether to animate the change
+     * @return this, to allow builder pattern
+     */
+    public T hide(boolean animate) {
+        mIsHiddenByUser = true;
+        updateVisibility(animate);
+        return getSubInstance();
+    }
+
+    /**
+     * @return if the badge is hidden
+     */
+    public boolean isHidden() {
+        return mIsHiddenByUser || mIsHiddenByAutoSelect;
+    }
+
+    private void updateVisibility() {
+        updateVisibility(true);
+    }
+
+    private void updateVisibility(boolean animate) {
+        if (isHidden()) {
+            hideView(animate, true);
+        } else {
+            showView(animate);
+        }
+    }
+
+    private void showView(boolean animate) {
         if (isWeakReferenceValid()) {
             TextView textView = mTextViewRef.get();
             if (animate) {
@@ -237,22 +282,9 @@ abstract class BadgeItem<T extends BadgeItem<T>> {
                 textView.setVisibility(View.VISIBLE);
             }
         }
-        return getSubInstance();
     }
 
-    /**
-     * @return this, to allow builder pattern
-     */
-    public T hide() {
-        return hide(true);
-    }
-
-    /**
-     * @param animate whether to animate the change
-     * @return this, to allow builder pattern
-     */
-    public T hide(boolean animate) {
-        mIsHidden = true;
+    private void hideView(boolean animate, boolean fromUser) {
         if (isWeakReferenceValid()) {
             TextView textView = mTextViewRef.get();
             if (animate) {
@@ -281,13 +313,5 @@ abstract class BadgeItem<T extends BadgeItem<T>> {
                 textView.setVisibility(View.GONE);
             }
         }
-        return getSubInstance();
-    }
-
-    /**
-     * @return if the badge is hidden
-     */
-    public boolean isHidden() {
-        return mIsHidden;
     }
 }
